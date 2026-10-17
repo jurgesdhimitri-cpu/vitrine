@@ -1,0 +1,36 @@
+name: Build IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      decrypted_ipa_url:
+        description: 'Direct Link to Spotify Decrypted IPA (.ipa)'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Dependencies
+        run: |
+          brew install theos ldid
+
+      - name: Download Spotify IPA
+        run: |
+          curl -L "${{ inputs.decrypted_ipa_url }}" -o spotify.ipa
+
+      - name: Build Vitrine IPA
+        run: |
+          make release IPA=spotify.ipa
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vitrine-Spotify
+          path: "*.ipa"
